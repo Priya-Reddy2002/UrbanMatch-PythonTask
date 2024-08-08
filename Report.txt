@@ -1,0 +1,39 @@
+This report provides an overview of the implementation of user profile management and matching functionalities using FastAPI. It outlines the approach taken, the key components of the system, and any assumptions made during the development process.
+
+Project Requirements
+    For this assignment 3.10.12 python version is used. Other requirements that have been used are:
+    uvicorn==0.30.5
+    pydantic==2.8.2
+    email_validator==2.2.0
+    fastapi==0.112.0
+    SQLAlchemy==2.0.31
+
+Modifications in code:
+    I have changed the code to the widely adopted style guide is PEP 8 (Python Enhancement Proposal 8), which provides conventions for writing readable and consistent Python code.
+    database.py
+        Modified the comment syntax from "//" to "#"
+    models.py ###RECHECK###
+        In the models.py for the interests field ARRAY[String] datatype is used, but it is not supported by the sqlite. So, modified that to JSON.
+        JSON in general supports wide variety of data types. But, as pydantic validation is there it will allow of list(str) of interests
+    schemas.py
+        A new schema is added to send a response to the user deletion action.
+        The type of email is changed to pydantic EmailStr such that it can validate whether the string the email of any domain or not.
+    main.py
+        In this file functionalities to delete a user, finding matches to the user and updating the user details are made. dict method(for converting pydantic model to dictionary) might be deprecated in further versions, so it is replaced with model_dump method.
+
+Approach
+    Pydantic Schemas:
+    Created Pydantic models for returned a message when a user is deleted. For data validation of email utilized EmailStr for validating email addresses.
+    API Endpoints
+        Implemented the following endpoints:
+        Update user: Changes the user details in the database if the user exists. For this the given user id details are fetched from the database. If the user is present then updating the details of that user in the database else nothing is changed.
+            Output: If the user is present the updated user details are sent back else an exception is raised saying that user not found
+        Delete User: Removes a user from the database based on their ID if the user exists after fetching the details from db.
+            Output: If the user is present then a message "User deleted" sent back else an exception is raised saying that user not found
+        Find Matches: Identifies potential matches for a user based on their city and interests and opposite gender. Firstly fetching the user details based on id. Then the users with other gender and same city is fetched. Finally, from these users if any of their interests are matched then returning those particular users.
+            Output: A list of users with the above matched criteria and an empty list if no one is matched. An exception will be raised if the source user is not there in the details.
+
+Assumptions made:
+    Interest Matching: Testing whether at least 1 interest with the exact name is there. In a production system, more sophisticated text search or set operations would be needed.
+    Email Validation: The EmailStr type from Pydantic is assumed to be sufficient for basic email validation.
+    Error Handling: Basic error handling is implemented to handle cases where a user is not found during deletion or match finding.
